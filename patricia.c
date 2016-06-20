@@ -48,20 +48,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
  */
 
-static char copyright[] =
-"This product includes software developed by the University of Michigan, Merit"
-"Network, Inc., and their contributors.";
+#define COPYRIGHT \
+"This product includes software developed by the University of Michigan, Merit "\
+"Network, Inc., and their contributors."
 
-#include <assert.h> /* assert */
-#include <ctype.h> /* isdigit */
-#include <errno.h> /* errno */
-#include <math.h> /* sin */
-#include <stddef.h> /* NULL */
-#include <stdio.h> /* sprintf, fprintf, stderr */
-#include <stdlib.h> /* free, atol, calloc */
-#include <string.h> /* memcpy, strchr, strlen */
-#include <arpa/inet.h> /* for inet_addr */
-#include <sys/types.h> /* for u_short, etc. */
+#include <assert.h> 
+#include <ctype.h> 
+#include <errno.h> 
+#include <math.h> 
+#include <stddef.h> 
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <string.h> 
+#include <arpa/inet.h> 
+#include <sys/types.h> 
 
 #include "patricia.h"
 
@@ -108,7 +108,7 @@ local_inet_pton (int af, const char *src, void *dst)
 
 	if (af == AF_INET) {
 	result = inet_addr(src);
-	if (result == -1)
+	if (result == INADDR_NONE)
 		return 0;
 	else {
 			memcpy (dst, &result, 4);
@@ -358,12 +358,12 @@ ascii2prefix (int family, char *string)
 // Get rid of this with next IPv6 upgrade
 #if defined(NT) && !defined(HAVE_INET_NTOP)
 			inet6_addr(string, &sin6);
-			return (New_Prefix (AF_INET6, &sin6, bitlen));
+			return (New_Prefix (AF_INET6, &sin6, (int)bitlen));
 #else
 			if ((result = local_inet_pton (AF_INET6, string, &sin6)) <= 0)
 				return (NULL);
 #endif /* NT */
-			return (New_Prefix (AF_INET6, &sin6, bitlen));
+			return (New_Prefix (AF_INET6, &sin6, (int)bitlen));
 		}
 #endif /* HAVE_IPV6 */
 		else
@@ -673,7 +673,8 @@ patricia_lookup (patricia_tree_t *patricia, prefix_t *prefix)
 	patricia_node_t *node, *new_node, *parent, *glue;
 	u_char *addr, *test_addr;
 	u_int bitlen, check_bit, differ_bit;
-	int i, j, r;
+        u_int i;
+	int j, r;
 
 	assert (patricia);
 	assert (prefix);

@@ -53,6 +53,8 @@
 
 #include <sys/types.h>
 
+#define HAVE_IPV6 1 // JS: force use of ip6
+
 
 /* { from defs.h */
 #define prefix_touchar(prefix) ((u_char *)&(prefix)->add.sin)
@@ -62,25 +64,29 @@
 
 #define addroute make_and_lookup
 
-#include <netinet/in.h> /* for struct in_addr */
-
-#include <sys/socket.h> /* for AF_INET */
+#include <netinet/in.h> 
+#include <sys/socket.h> 
 
 /* { from mrt.h */
 
-// ipv4 prefix struct
 typedef struct _prefix4_t {
-    u_short family;		/* AF_INET | AF_INET6 */
-    u_short bitlen;		/* same as mask? */
-    int ref_count;		/* reference count */
+    u_short family;		
+    u_short bitlen;		
+    int ref_count;		
     struct in_addr sin;
 } prefix4_t;
 
-// ipv4/v6 prefix struct
+typedef struct _prefix6_t {
+    u_short family;		
+    u_short bitlen;		
+    int ref_count;		
+    struct in6_addr sin6;
+} prefix6_t;
+
 typedef struct _prefix_t {
-    u_short family;		/* AF_INET | AF_INET6 */
-    u_short bitlen;		/* same as mask? */
-    int ref_count;		/* reference count */
+    u_short family;		
+    u_short bitlen;	
+    int ref_count;
     union {
 		struct in_addr sin;
 #ifdef HAVE_IPV6
@@ -96,18 +102,18 @@ typedef void (*void_fn1_t)(void *);
 typedef void (*void_fn2_t)(struct _prefix_t *, void *);
 
 typedef struct _patricia_node_t {
-   u_int bit;			/* flag if this node used */
-   prefix_t *prefix;		/* who we are in patricia tree */
-   struct _patricia_node_t *l, *r;	/* left and right children */
-   struct _patricia_node_t *parent;/* may be used */
-   void *data;			/* pointer to data */
-   void	*user1;			/* pointer to usr data (ex. route flap info) */
+   u_int bit;			
+   prefix_t *prefix;		
+   struct _patricia_node_t *l, *r;
+   struct _patricia_node_t *parent;
+   void *data;
+   void	*user1;
 } patricia_node_t;
 
 typedef struct _patricia_tree_t {
    patricia_node_t 	*head;
-   u_int		maxbits;	/* for IPv4, 32 bit addresses */
-   int num_active_node;		/* for debug purpose */
+   u_int		maxbits;
+   int num_active_node;
 } patricia_tree_t;
 
 
@@ -123,6 +129,7 @@ void Destroy_Patricia (patricia_tree_t *patricia, void_fn1_t func);
 void patricia_process (patricia_tree_t *patricia, void_fn2_t func);
 
 void Deref_Prefix (prefix_t * prefix);
+prefix_t * New_Prefix(int, void *, int);
 
 /* { from demo.c */
 
